@@ -18,7 +18,8 @@ load_dotenv()
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 PHONE_NUMBER_FROM = os.getenv('PHONE_NUMBER_FROM')
-CALLBACK_URL= os.getenv('CALLBACK_URL')
+RECORDING_CALLBACK_URL= os.getenv('RECORDING_CALLBACK_URL')
+PHONE_CALLBACK_URL= os.getenv('PHONE_CALLBACK_URL')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 raw_domain = os.getenv('DOMAIN', '')
 DOMAIN = re.sub(r'(^\w+:|^)\/\/|\/+$', '', raw_domain) # Strip protocols and trailing slashes from DOMAIN
@@ -187,7 +188,8 @@ async def make_call(phone_number_to_call: str):
 
     call = client.calls.create(
         record=True,
-        recording_status_callback=CALLBACK_URL,
+        status_callback=PHONE_CALLBACK_URL,
+        recording_status_callback=RECORDING_CALLBACK_URL,
         from_=PHONE_NUMBER_FROM,
         to=phone_number_to_call,
         twiml=outbound_twiml

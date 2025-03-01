@@ -4,39 +4,61 @@ from firebase_functions import firestore_fn, https_fn
 # The Firebase Admin SDK to access Cloud Firestore.
 from firebase_admin import initialize_app, firestore
 import google.cloud.firestore
+import json
+
 
 app = initialize_app()
 
 
 @https_fn.on_request()
-def add(req: https_fn.Request) -> https_fn.Response:
-    """Handle Twilio recording status callback"""
-    
-    # Print all data from the request for debugging
-    print("Request method:", req.method)
-    print("Request args:", req.args)
-    print("Request form:", req.form)
-    print("Request json:", req.get_json(silent=True))
-    
-    # Process Twilio's data (they typically send as form data)
+def add_recording(req: https_fn.Request) -> https_fn.Response:
+    """Handle Twilio recording status callback""" 
+    # Process Twilio's data
     if req.method == "POST":
         # Get recording details from Twilio's form data
-        recording_sid = req.form.get("RecordingSid")
+        call_sid = req.form.get("CallSid")
         recording_url = req.form.get("RecordingUrl")
-        recording_phone = req.form.get("CallSid")
 
         import datetime
         recording_date = datetime.datetime.now().isoformat()
 
         firestore_client: google.cloud.firestore.Client = firestore.client()
 
-        # Push the new message into Cloud Firestore using the Firebase Admin SDK.
-        _, doc_ref = firestore_client.collection("videos").document(recording_sid).set({"recording_url": recording_url, "recording_sid": recording_sid, "recording_date": recording_date, "recording_phone": recording_phone
-        })
-                
+        doc_data = {
+            "recording_url": recording_url, 
+            "call_sid": call_sid, 
+            "recording_date": recording_date
+        }
+            
+        # Try to set the document
+        doc_ref = firestore_client.collection("videos").document(call_sid)
+        doc_ref.set(doc_data, merge=True)
+
         # Always return a 200 response to Twilio
         return https_fn.Response("Recording status received", status=200)
 
+@https_fn.on_request()
+def add_phone(req: https_fn.Request) -> https_fn.Response:
+    """Handle Twilio recording status callback""" 
+    # Process Twilio's data
+    if req.method == "POST":
+        # Get recording details from Twilio's form data
+        call_sid = req.form.get("CallSid")
+        recording_phone = req.form.get("To")
+
+        firestore_client: google.cloud.firestore.Client = firestore.client()
+
+        doc_data = {
+            "call_sid": call_sid, 
+            "recording_phone": recording_phone
+        }
+            
+        # Try to set the document
+        doc_ref = firestore_client.collection("videos").document(call_sid)
+        doc_ref.set(doc_data, merge=True)
+
+        # Always return a 200 response to Twilio
+        return https_fn.Response("Recording status received", status=200)
 
 @https_fn.on_request()
 def trigger_call(req: https_fn.Request) -> https_fn.Response:

@@ -38,6 +38,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import { AddUser } from "../General/AddUser"
+
 const data: Payment[] = [
   {
     id: "m5gr84i9",
@@ -56,7 +58,7 @@ const data: Payment[] = [
   {
     id: "derv1ws0",
     phone: "837-555-0147",
-    status: "processing",
+    status: "pending",
     date: new Date("June 12, 2015 14:45:00"),
     name: "Monserrat Rivera",
   },
@@ -84,7 +86,7 @@ const data: Payment[] = [
   {
     id: "p9dm4xw7",
     phone: "235-555-0189",
-    status: "processing",
+    status: "success",
     date: new Date("July 18, 2016 12:55:00"),
     name: "Lena Clarkson",
   },
@@ -105,7 +107,7 @@ const data: Payment[] = [
   {
     id: "t2we9dj3",
     phone: "589-555-0179",
-    status: "processing",
+    status: "failed",
     date: new Date("May 30, 2011 20:05:00"),
     name: "Olivia Chang",
   },
@@ -126,7 +128,7 @@ const data: Payment[] = [
   {
     id: "b4yx7qp9",
     phone: "741-555-0119",
-    status: "processing",
+    status: "pending",
     date: new Date("March 13, 2023 11:30:00"),
     name: "Noah Bennett",
   },
@@ -150,7 +152,7 @@ export type Payment = {
   id: string
   phone: string
   date: Date
-  status: "pending" | "processing" | "success" | "failed"
+  status: "pending" | "success" | "failed"
   name: string
 }
 
@@ -219,20 +221,30 @@ export function DataTable() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Date
+            Call Date
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
       },
       cell: ({ row }) => {
         const dateValue = row.getValue<Date>("date")
+        const status = row.getValue("status")
+
         const formattedDate = new Intl.DateTimeFormat("en-US", {
           day: "numeric",
           month: "short",
           year: "numeric",
         }).format(dateValue)
 
-        return <div>{formattedDate}</div>
+        return (
+          <div>
+            {status == "success"
+              ? formattedDate
+              : status == "pending"
+              ? "No call made"
+              : "Not able to connect call"}
+          </div>
+        )
       },
     },
     {
@@ -293,9 +305,7 @@ export function DataTable() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <div className="flex gap-4 w-1/2">
-          <Button variant="outline" className="w-1/3">
-            <Plus className="mr-2 h-4 w-4" /> Add User
-          </Button>
+          <AddUser />
           <Input
             placeholder="Filter names..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}

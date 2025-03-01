@@ -1,13 +1,30 @@
-import Link from "next/link"
+"use client"
 
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { fetchAllUsers } from "@/firebase"
+
+import { MainGraph } from "@/components/General/MainGraph"
 // import { siteConfig } from "@/config/site"
 // import { buttonVariants } from "@/components/ui/button"
 import { DataTable } from "@/components/table/table"
 
 export default function IndexPage() {
+  const [users, setUsers] = useState([])
+  useEffect(() => {
+    async function loadUsers() {
+      const usersData = await fetchAllUsers()
+      setUsers(usersData) // Assuming you have a state variable for users
+      console.log(usersData)
+    }
+
+    loadUsers()
+  }, [])
+
   return (
     <div className="m-5">
       <DataTable />
+      <MainGraph />
     </div>
   )
   return (
