@@ -18,6 +18,7 @@ def add_recording(req: https_fn.Request) -> https_fn.Response:
         # Get recording details from Twilio's form data
         call_sid = req.form.get("CallSid")
         recording_url = req.form.get("RecordingUrl")
+        recording_sid= req.form.get("RecordingSid")
 
         import datetime
         recording_date = datetime.datetime.now().isoformat()
@@ -26,6 +27,7 @@ def add_recording(req: https_fn.Request) -> https_fn.Response:
 
         doc_data = {
             "recording_url": recording_url, 
+            "recording_sid":recording_sid,
             "call_sid": call_sid, 
             "recording_date": recording_date
         }
