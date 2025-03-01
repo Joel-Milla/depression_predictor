@@ -7,7 +7,7 @@ yarn-error.log*
 firebase-debug.log*
 firebase-debug.*.log*
 .env
-
+*.local
 # Python virtual environment
 venv/
 Include/
