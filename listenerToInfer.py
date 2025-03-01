@@ -168,7 +168,7 @@ def process_recording(doc_id, twilio_url, recording_date):
 def perform_inference(doc_id, audio_path, recording_date):
     """Perform model inference on an audio file"""
     try:
-        model_path = '/home/shengbin/dlweek/depression_predictor/ml/models/emotion_recognition_model.pth'
+        model_path = '/home/shengbin/hack/depression_predictor/ml/models/emotion_recognition_model.pth'
         model = load_model(model_path, num_classes=len(emotions))
         intervalResults, overallResults = predict_emotion(model, audio_path)
         

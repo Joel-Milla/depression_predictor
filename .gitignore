@@ -2,6 +2,7 @@
 ml/data/
 ml/__pycache__/
 *.wav
+*.mp3
 *.pth
 # Logs
 logs
