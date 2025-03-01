@@ -4,6 +4,9 @@ import numpy as np
 import torch.nn as nn
 import torchvision.models as models
 from torchvision.models import VGG16_Weights
+from google.cloud import firestore
+import sys
+import json
 
 class EmotionRecognitionModel(nn.Module):
     def __init__(self, num_classes):
@@ -32,6 +35,8 @@ def predict_emotion(model, audio_path):
     interval_samples = interval_duration * sr
     num_intervals = len(y) // interval_samples
 
+    results = []
+
     for i in range(num_intervals):
         start_sample = i * interval_samples
         end_sample = start_sample + interval_samples
@@ -55,13 +60,19 @@ def predict_emotion(model, audio_path):
 
         probability_dict = {emotions[j]: f"{prob:.4f}" for j, prob in enumerate(probabilities)}
 
-        print(f"Interval {i+1}:")
-        print(f"Predicted Emotion: {emotions[predicted_class]}")
-        print(f"Probability Distribution: {probability_dict}")
+        result = {
+            "interval": i + 1,
+            "predicted_emotion": emotions[predicted_class],
+            "probability_distribution": probability_dict
+        }
+        results.append(result)
+
+    return results
 
 if __name__ == "__main__":
-    model_path = 'emotion_recognition_model.pth'
-    audio_file_path = '/home/shengbin/dlweek/custom/data/OAF_happy/OAF_bath_happy.wav'  # Replace with your audio file path
+    model_path = '/home/shengbin/dlweek/depression_predictor/ml/models/emotion_recognition_model.pth'
+    audio_file_path = sys.argv[1]
     
     model = load_model(model_path, num_classes=len(emotions))
-    predict_emotion(model, audio_file_path)
+    results = predict_emotion(model, audio_file_path)
+    print(json.dumps(results, indent=4))
