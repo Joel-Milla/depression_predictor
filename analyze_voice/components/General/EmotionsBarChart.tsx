@@ -26,15 +26,15 @@ import {
 } from "@/components/ui/chart"
 
 // Emotion data for bar chart
-const chartData = [
-  { emotion: "Anger", count: 222 },
-  { emotion: "Disgust", count: 150 },
-  { emotion: "Fear", count: 189 },
-  { emotion: "Happy", count: 321 },
-  { emotion: "Neutral", count: 178 },
-  { emotion: "Pleasant", count: 230 },
-  { emotion: "Sad", count: 99 },
-]
+// const chartData = [
+//   { emotion: "Anger", count: 222 },
+//   { emotion: "Disgust", count: 150 },
+//   { emotion: "Fear", count: 189 },
+//   { emotion: "Happy", count: 321 },
+//   { emotion: "Neutral", count: 178 },
+//   { emotion: "Pleasant", count: 230 },
+//   { emotion: "Sad", count: 99 },
+// ]
 
 // Chart configuration with colors for emotions
 const chartConfig = {
@@ -72,15 +72,14 @@ const chartConfig = {
   },
 }
 
-// Calculate the most prevalent emotion
-const mostPrevalent = [...chartData].sort((a, b) => b.count - a.count)[0]
-const totalEmotions = chartData.reduce((sum, item) => sum + item.count, 0)
-const prevalentPercentage = (
-  (mostPrevalent.count / totalEmotions) *
-  100
-).toFixed(1)
-
-export function EmotionsBarChart() {
+export function EmotionsBarChart({ data }) {
+  // Calculate the most prevalent emotion
+  const mostPrevalent = [...data].sort((a, b) => b.count - a.count)[0]
+  const totalEmotions = data.reduce((sum, item) => sum + item.count, 0)
+  const prevalentPercentage = (
+    (mostPrevalent.count / totalEmotions) *
+    100
+  ).toFixed(1)
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -91,7 +90,7 @@ export function EmotionsBarChart() {
         <ChartContainer config={chartConfig} className="h-100">
           {" "}
           {/* Increase height to match pie chart */}
-          <BarChart data={chartData}>
+          <BarChart data={data}>
             <CartesianGrid
               vertical={false}
               strokeDasharray="3 3"
