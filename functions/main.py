@@ -39,3 +39,24 @@ def add(req: https_fn.Request) -> https_fn.Response:
         
         # Always return a 200 response to Twilio
         return https_fn.Response("Recording status received", status=200)
+
+
+@https_fn.on_request()
+def trigger_call(req: https_fn.Request) -> https_fn.Response:
+    # Get phone number from query parameters
+    phone_number = req.args.get('phone_number')
+    if not phone_number:
+        return https_fn.Response("Missing phone number", status=400)
+    
+    # Remove any quotes
+    phone_number = phone_number.strip('"')
+    
+    # Send notification to computer to make call
+    db = firestore.client()
+    db.collection('call_requests').add({
+        'phone_number': phone_number,
+        'timestamp': firestore.SERVER_TIMESTAMP,
+        'status': 'pending'
+    })
+    
+    return https_fn.Response(f"Call request for {phone_number} has been queued", status=200)
