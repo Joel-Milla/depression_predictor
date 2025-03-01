@@ -159,11 +159,6 @@ async def initialize_session(openai_ws):
 async def check_number_allowed(to):
     """Check if a number is allowed to be called."""
     try:
-        # Uncomment these lines to test numbers. Only add numbers you have permission to call
-        # OVERRIDE_NUMBERS = ['+18005551212'] 
-        # if to in OVERRIDE_NUMBERS:             
-          # return True
-
         incoming_numbers = client.incoming_phone_numbers.list(phone_number=to)
         if incoming_numbers:
             return True
@@ -185,10 +180,6 @@ async def make_call(phone_number_to_call: str):
     is_allowed = await check_number_allowed(phone_number_to_call)
     if not is_allowed:
         raise ValueError(f"The number {phone_number_to_call} is not recognized as a valid outgoing number or caller ID.")
-
-    # Ensure compliance with applicable laws and regulations
-    # All of the rules of TCPA apply even if a call is made by AI.
-    # Do your own diligence for compliance.
 
     outbound_twiml = (
         f'<?xml version="1.0" encoding="UTF-8"?>'
