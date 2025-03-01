@@ -23,16 +23,15 @@ def add(req: https_fn.Request) -> https_fn.Response:
         # Get recording details from Twilio's form data
         recording_sid = req.form.get("RecordingSid")
         recording_url = req.form.get("RecordingUrl")
-        recording_status = req.form.get("RecordingStatus")
-        
-        print(f"Recording SID: {recording_sid}")
-        print(f"Recording URL: {recording_url}")
-        print(f"Recording Status: {recording_status}")
+        recording_phone = req.form.get("CallSid")
+
+        import datetime
+        recording_date = datetime.datetime.now().isoformat()
 
         firestore_client: google.cloud.firestore.Client = firestore.client()
 
         # Push the new message into Cloud Firestore using the Firebase Admin SDK.
-        _, doc_ref = firestore_client.collection("videos").add({recording_sid: recording_url
+        _, doc_ref = firestore_client.collection("videos").document(recording_sid).set({"recording_url": recording_url, "recording_sid": recording_sid, "recording_date": recording_date, "recording_phone": recording_phone
         })
         
         # Here you could store the recording info in Firestore if needed

@@ -16,11 +16,12 @@ def on_snapshot(doc_snapshot, changes, read_time):
             phone_number = data['phone_number']
             print(f"Received request to call {phone_number}")
             
+            # Update status
+            doc.reference.update({'status': 'processing'})
+            
             # Execute your call script
             subprocess.run(["python", "caller.py", "--call", phone_number])
             
-            # Update status
-            doc.reference.update({'status': 'processing'})
 
 # Listen for new call requests
 call_requests_ref = db.collection('call_requests')
