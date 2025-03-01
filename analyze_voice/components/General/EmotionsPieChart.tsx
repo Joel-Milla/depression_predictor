@@ -17,15 +17,15 @@ import {
 } from "@/components/ui/chart"
 
 // Updated chart data for emotions
-const chartData = [
-  { emotion: "anger", count: 222, fill: "#ef4444" }, // Red
-  { emotion: "disgust", count: 150, fill: "#84cc16" }, // Lime
-  { emotion: "fear", count: 189, fill: "#8b5cf6" }, // Purple
-  { emotion: "happy", count: 321, fill: "#f59e0b" }, // Amber
-  { emotion: "neutral", count: 178, fill: "#94a3b8" }, // Slate
-  { emotion: "pleasant_surprised", count: 230, fill: "#06b6d4" }, // Cyan
-  { emotion: "sad", count: 99, fill: "#4f46e5" }, // Indigo
-]
+// const chartData = [
+//   { emotion: "anger", count: 222, fill: "#ef4444" }, // Red
+//   { emotion: "disgust", count: 150, fill: "#84cc16" }, // Lime
+//   { emotion: "fear", count: 189, fill: "#8b5cf6" }, // Purple
+//   { emotion: "happy", count: 321, fill: "#f59e0b" }, // Amber
+//   { emotion: "neutral", count: 178, fill: "#94a3b8" }, // Slate
+//   { emotion: "pleasant_surprised", count: 230, fill: "#06b6d4" }, // Cyan
+//   { emotion: "sad", count: 99, fill: "#4f46e5" }, // Indigo
+// ]
 
 // Updated chart config for emotions
 const chartConfig = {
@@ -80,7 +80,7 @@ const CustomLegend = ({ payload }) => {
   )
 }
 
-export function EmotionsPieChart() {
+export function EmotionsPieChart({ data }) {
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -96,7 +96,7 @@ export function EmotionsPieChart() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={chartData}
+                  data={data}
                   dataKey="count"
                   nameKey="emotion"
                   cx="50%"
@@ -107,7 +107,7 @@ export function EmotionsPieChart() {
                     `${(percent * 100).toFixed(0)}%`
                   }
                 >
-                  {chartData.map((entry, index) => (
+                  {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
@@ -115,7 +115,7 @@ export function EmotionsPieChart() {
                   formatter={(value, name, props) => [
                     `${value} (${(
                       (value /
-                        chartData.reduce((sum, item) => sum + item.count, 0)) *
+                        data.reduce((sum, item) => sum + item.count, 0)) *
                       100
                     ).toFixed(1)}%)`,
                     chartConfig[props.payload.emotion]?.label || name,
@@ -128,7 +128,7 @@ export function EmotionsPieChart() {
           {/* Legend takes up the rest */}
           <div className="w-full sm:w-1/2 mt-4 sm:mt-0 pl-0 sm:pl-4">
             <div className="grid grid-cols-1 gap-y-2">
-              {chartData.map((item, index) => (
+              {data.map((item, index) => (
                 <div key={index} className="w-full flex justify-between">
                   <div
                     className="flex w-4 h-4 mr-2 rounded-sm"
