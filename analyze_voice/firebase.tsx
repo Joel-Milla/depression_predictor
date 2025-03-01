@@ -2,7 +2,13 @@
 
 import { getAnalytics } from "firebase/analytics"
 import { initializeApp } from "firebase/app"
-import { collection, getDocs, getFirestore } from "firebase/firestore"
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+} from "firebase/firestore"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -29,62 +35,97 @@ const db = getFirestore(app)
 // Function to fetch all users
 async function fetchAllUsers() {
   try {
-    const users = []
+    const TARGET_PHONES = ["+6591268057", "+6582924032"]
+
+    const payments = []
+
     const usersCollection = collection(db, "users")
-    let querySnapshot = await getDocs(usersCollection)
-
-    querySnapshot.forEach((doc) => {
-      // Add document data and id to array
-      users.push({
-        id: doc.id,
-        ...doc.data(),
-      })
-    })
-
-    const videos = []
     const videosCollection = collection(db, "videos")
-    querySnapshot = await getDocs(videosCollection)
+    const resultsCollection = collection(db, "results")
 
-    querySnapshot.forEach((doc) => {
-      // Add document data and id to array
-      videos.push({
-        id: doc.id,
-        ...doc.data(),
-      })
-    })
+    const [usersSnapshot, videosSnapshot, resultsSnapshot] = await Promise.all([
+      getDocs(usersCollection),
+      getDocs(videosCollection),
+      getDocs(resultsCollection),
+    ])
 
-    const results = []
-    const resultsCollection = collection(db, "videos")
-    querySnapshot = await getDocs(resultsCollection)
+    const users = usersSnapshot.docs.map((doc) => ({
+      id: doc.id, // This is the phone number
+      ...doc.data(),
+      phone: doc.id,
+    }))
 
-    querySnapshot.forEach((doc) => {
-      // Add document data and id to array
-      results.push({
-        id: doc.id,
-        ...doc.data(),
-      })
-    })
+    const videos = videosSnapshot.docs.map((doc) => ({
+      id: doc.id, // This is the call_sid
+      ...doc.data(),
+    }))
 
-    return users
+    const results = resultsSnapshot.docs.map((doc) => ({
+      id: doc.id, // This is the recording ID
+      ...doc.data(),
+    }))
+
+    // Step 2: Process each target phone number
+    for (const targetPhone of TARGET_PHONES) {
+      // Find the user with this phone number
+      const user = users.find((u) => u.phone === targetPhone)
+
+      if (user) {
+        // Find videos associated with this user
+        const userVideos = videos.filter(
+          (video) => video.recording_phone === targetPhone
+        )
+
+        // For each video, find and attach results
+        const videosWithResults = userVideos.map((video) => {
+          const videoResults = results.find(
+            (result) => result.id === video.call_sid
+          )
+
+          return {
+            ...video,
+            results: videoResults || null,
+          }
+        })
+
+        // Create a Payment object for this user
+        const payment = {
+          id: user.id,
+          phone: targetPhone,
+          name: user.name || user.display_name || "Unknown User",
+          // Use date from first video if available, otherwise current date
+          date:
+            userVideos.length > 0 && userVideos[0].recording_date
+              ? new Date(userVideos[0].recording_date)
+              : new Date(),
+          // Status based on whether they have videos
+          status: userVideos.length > 0 ? "success" : "pending",
+          // Include all user data and videos in metadata
+          metadata: {
+            userData: user,
+            videos: videosWithResults,
+          },
+        }
+
+        payments.push(payment)
+      } else {
+        // If user not found, create a minimal Payment object
+        payments.push({
+          id: targetPhone,
+          phone: targetPhone,
+          name: "Unknown User",
+          date: new Date(),
+          status: "pending",
+          metadata: {},
+        })
+      }
+    }
+
+    return payments
   } catch (error) {
-    console.error("Error fetching users:", error)
+    console.error("Error fetching and combining data:", error)
     throw error
   }
 }
-
-// Usage example
-// You can call this function from anywhere in your application
-// For example, in a React component:
-
-/*
-useEffect(() => {
-  async function loadUsers() {
-    const usersData = await fetchAllUsers()
-    setUsers(usersData) // Assuming you have a state variable for users
-  }
-  
-  loadUsers()
-}, [])
-*/
 
 export { fetchAllUsers }
