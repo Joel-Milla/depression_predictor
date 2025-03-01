@@ -1,3 +1,8 @@
+# ML
+ml/data/
+ml/__pycache__/
+*.wav
+*.pth
 # Logs
 logs
 *.log
