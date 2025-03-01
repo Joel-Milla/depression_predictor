@@ -125,9 +125,7 @@ async def send_initial_conversation_item(openai_ws):
                 {
                     "type": "input_text",
                     "text": (
-                        "Whats popping homeboy, its Kanye here."
-                        "I gota a bag full of hot cheetos and boy it tastes so good"
-                        "Who are you and why do you have such a big fourhead, nerd? Lmao'"
+                        "Do not talk, just wait and listen to me"
                     )
                 }
             ]
