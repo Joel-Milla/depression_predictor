@@ -147,8 +147,11 @@ def process_recording(doc_id, twilio_url, recording_date):
             print(f"Recording saved as {mp3_path}")
             
             # Convert mp3 to wav
-            audio = AudioSegment.from_mp3(mp3_path)
-            audio.export(wav_path, format="wav")
+            # audio = AudioSegment.from_mp3(mp3_path)
+            # audio.export(wav_path, format="wav")
+            # print(f"Converted {mp3_path} to {wav_path}")
+            # Convert mp3 to wav using ffmpeg
+            subprocess.run(['ffmpeg', '-i', mp3_path, wav_path], check=True)
             print(f"Converted {mp3_path} to {wav_path}")
             
             # Perform model inference
