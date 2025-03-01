@@ -87,7 +87,7 @@ scikit-learn==1.6.1
 scipy==1.15.2
 seaborn==0.13.2
 six==1.17.0
-smclib==3.0.2
+# smclib==3.0.2
 soundfile==0.13.1
 soxr==0.5.0.post1
 stack-data==0.6.3
