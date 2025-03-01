@@ -185,6 +185,7 @@ async def make_call(phone_number_to_call: str):
     )
 
     call = client.calls.create(
+        record=True,
         from_=PHONE_NUMBER_FROM,
         to=phone_number_to_call,
         twiml=outbound_twiml
@@ -202,15 +203,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     phone_number = args.call
-    print(
-        'Our recommendation is to always disclose the use of AI for outbound or inbound calls.\n'
-        'Reminder: All of the rules of TCPA apply even if a call is made by AI.\n'
-        'Check with your counsel for legal and compliance advice.'
-    )
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(make_call(phone_number))
     
     uvicorn.run(app, host="0.0.0.0", port=PORT)
-
-# 6591268057
