@@ -50,11 +50,12 @@ def load_model(model_path, num_classes):
 
 def predict_emotion(model, audio_path):
     y, sr = librosa.load(audio_path, sr=16000)
-    interval_duration = 2  # seconds
+    interval_duration = 5  # seconds
     interval_samples = interval_duration * sr
     num_intervals = len(y) // interval_samples
 
-    results = []
+    intervalResults = []
+    overall_probabilities = np.zeros(len(emotions))
 
     for i in range(num_intervals):
         start_sample = i * interval_samples
@@ -77,18 +78,25 @@ def predict_emotion(model, audio_path):
             probabilities = torch.nn.functional.softmax(output, dim=1).numpy().flatten()
             predicted_class = output.argmax(dim=1).item()
 
+        overall_probabilities += probabilities
+
         probability_dict = {emotions[j]: f"{prob:.4f}" for j, prob in enumerate(probabilities)}
 
-        result = {
+        intervalResult = {
             "interval": i + 1,
             "predicted_emotion": emotions[predicted_class],
             "probability_distribution": probability_dict
         }
-        results.append(result)
+        intervalResults.append(intervalResult)
 
-    print(json.dumps(results, indent=2))
-    
-    return results
+    # Normalize overall probabilities
+    overall_probabilities /= num_intervals
+    overall_distribution = {emotions[j]: f"{prob:.4f}" for j, prob in enumerate(overall_probabilities)}
+
+    print(json.dumps(intervalResults, indent=2))
+    print(json.dumps(overall_distribution, indent=2))
+
+    return intervalResults, overall_distribution
 
 def on_snapshot(_, changes, __):
     for change in changes:
@@ -100,20 +108,25 @@ def on_snapshot(_, changes, __):
             # Look for Twilio recording URL fields
             # These typically start with https://api.twilio.com/
             twilio_url = None
+            recording_date = None
             
             for key, value in data.items():
+                if key == "recording_date":
+                    recording_date = value
+                    print(f"Recording date: {value}")
+                    
                 if isinstance(value, str) and value.startswith("https://api.twilio.com/"):
                     twilio_url = value
                     print(f"Found Twilio URL: {twilio_url}")
                     
                     # Process the recording
-                    process_recording(doc.id, twilio_url)
+                    process_recording(doc.id, twilio_url, recording_date)
                     break
             
             if not twilio_url:
                 print("No Twilio URL found in this document")
 
-def process_recording(doc_id, twilio_url):
+def process_recording(doc_id, twilio_url, recording_date):
     """Process a Twilio recording URL"""
     try:
         # Initialize Twilio client
@@ -139,7 +152,7 @@ def process_recording(doc_id, twilio_url):
             print(f"Converted {mp3_path} to {wav_path}")
             
             # Perform model inference
-            perform_inference(doc_id, wav_path)
+            perform_inference(doc_id, wav_path, recording_date)
             
             # Optionally, delete the mp3 file after conversion
             os.remove(mp3_path)
@@ -149,16 +162,18 @@ def process_recording(doc_id, twilio_url):
     except Exception as e:
         print(f"Error processing recording: {e}")
 
-def perform_inference(doc_id, audio_path):
+def perform_inference(doc_id, audio_path, recording_date):
     """Perform model inference on an audio file"""
     try:
         model_path = '/home/shengbin/dlweek/depression_predictor/ml/models/emotion_recognition_model.pth'
         model = load_model(model_path, num_classes=len(emotions))
-        results = predict_emotion(model, audio_path)
+        intervalResults, overallResults = predict_emotion(model, audio_path)
         
-        # Update Firestore with the inference results
+        # Update Firestore with the inference results and recording date
         db.collection('results').document(doc_id).set({
-            'results': results
+            'recording_date': recording_date,
+            'overallResults': overallResults,
+            'intervalResults': intervalResults
         })
         print(f"Inference results saved to Firestore for document {doc_id}")
         
