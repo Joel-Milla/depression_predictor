@@ -33,9 +33,7 @@ def add(req: https_fn.Request) -> https_fn.Response:
         # Push the new message into Cloud Firestore using the Firebase Admin SDK.
         _, doc_ref = firestore_client.collection("videos").document(recording_sid).set({"recording_url": recording_url, "recording_sid": recording_sid, "recording_date": recording_date, "recording_phone": recording_phone
         })
-        
-        # Here you could store the recording info in Firestore if needed
-        
+                
         # Always return a 200 response to Twilio
         return https_fn.Response("Recording status received", status=200)
 
